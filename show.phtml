@@ -1,0 +1,123 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'item resource show');
+$embedMedia = $this->siteSetting('item_media_embed', false);
+$itemMedia = $item->media();
+?>
+
+<?= $item->displayTitle() == '[Sin título]' ? $this->pageTitle($item->value('mcd:title'), 4) : $this->pageTitle($item->displayTitle(), 4); ?>
+<h3><?php echo $translate('Item'); ?></h3>
+<?php $this->trigger('view.show.before'); ?>
+<?php if ($embedMedia && $itemMedia) : ?>
+    <div class="media-embeds">
+        <?php foreach ($itemMedia as $media) :
+            echo $media->render();
+        endforeach;
+        ?>
+    </div>
+<?php endif; ?>
+<?php
+$itemSets = $item->itemSets();
+// var_dump(get_class_methods($item->itemSets()));
+// $itemSet->displayTitle()
+// var_dump ($item->value('mcd:genericNotes'));
+$objet= $item->value('mcd:genericNotes',  array('all' => true));
+
+// si la imagen va delante
+
+if (!$embedMedia && $itemMedia) : ?>
+    <div class="media-list">
+        <?php foreach ($itemMedia as $media) : ?>
+            <?php echo $media->linkPretty(); ?>
+        <?php endforeach; ?>
+    </div>
+<?php endif; 
+foreach ($itemSets as $itemSet) {
+   
+
+   
+    
+    // $t=$itemSet[$i]->title();
+    if ($i == 1 && $itemSet->title() == 'El Obrero') {
+
+        echo('<div class="property"><h4><b> Notas de contenido  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('dcterms:cartographicContentNotes'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> Notas del ejemplar </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('dcterms:cartographicSpecimenNotes'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> Condiciones de adquisición y/o precio </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:adquisition'). '<br></div></div></div>');
+
+    }
+
+    if ($i == 0 && $itemSet->title() == 'Archivo Histórico Fotográfico') {
+        echo('<div class="property"><h4><b> Signatura:  </b></h4> <div class="propertys"><div class="value" lang="">ES.13082.AHFTM/03.09.02.03//'. $item->value('dcterms:source'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> Enlace:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('dcterms:source'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> Código:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('bibo:identifier'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> Serie:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('bibo:volume'). '<br></div></div></div>');
+        echo('<div class="property"><h4><b> 1.4 Nivel descriptivo:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:class').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> 1.3 Fecha:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:publicationDate').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> 1.2 Título:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:title').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> 1.5 Volumen:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:responsibility').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> 2.1 Productor:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:materia1').'<br></div></div></div>');
+
+        if (sizeOf($objet)>1) {
+            # code...
+            echo('<div class="property"><h4><b> 3.1 Alcance y contenido:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('mcd:genericNotes').'<br></div></div></div>');
+            //fallo
+            echo('<div class="property"><h4><b> 7.3 Fecha y autor de la descripción:  </b></h4> <div class="propertys"><div class="value" lang="">'. $objet[1].'<br></div></div></div>');
+        }
+
+      
+else {
+    echo('<div class="property"><h4><b> 7.3 Fecha y autor de la descripción:  </b></h4> <div class="propertys"><div class="value" lang="">'. $objet[0].'<br></div></div></div>');
+}
+        echo('<div class="property"><h4><b> Materia 1:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:materia1').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> Materia 2:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:materia2').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> Materia 3:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:materia3').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> Materia 4:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:materia4').'<br></div></div></div>');
+        echo('<div class="property"><h4><b> Mandato:  </b></h4> <div class="propertys"><div class="value" lang="">'. $item->value('tsr:mandato').'<br></div></div></div>');
+    } elseif ($i == 0) {
+        echo $item->displayValues();
+    } else {
+        echo '';
+    }
+    //     if ($t=='Archivo Histórico Fotográfico'||$t=='2000-2009')
+    //     {
+    //         echo($item->value('tsr:materia2'));
+    //    } else {
+
+
+    //       
+    //    } 
+    $i++;
+}
+
+
+
+?>
+
+<div class="property">
+    <?php $itemSets = $item->itemSets(); ?>
+    <?php if (count($itemSets) > 0) : ?>
+        <h4><?php echo $translate('Item sets'); ?></h4>
+        <?php foreach ($itemSets as $itemSet) : ?>
+            <?php //echo($item->value('tsr:materia2')); 
+            ?>
+            <div class="value"><a href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a></div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+</div>
+
+
+
+<?php
+$page = $this->params()->fromQuery('page', 1);
+$property = $this->params()->fromQuery('property');
+$subjectValues = $item->displaySubjectValues($page, 25, $property);
+?>
+<?php if ($subjectValues) : ?>
+    <div id="item-linked">
+        <h3><?php echo $translate('Linked resources'); ?></h3>
+        <?php echo $subjectValues; ?>
+    </div>
+<?php endif; ?>
+
+<?php $this->trigger('view.show.after'); ?>
