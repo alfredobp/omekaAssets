@@ -1,0 +1,301 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'item resource browse');
+
+$query = $this->params()->fromQuery();
+$itemSetShow = isset($itemSet);
+if ($itemSetShow) :
+    $this->htmlElement('body')->appendAttribute('class', 'item-set');
+    $query['item_set_id'] = $itemSet->id();
+endif;
+if (isset($itemSet)) {
+
+
+    if ($itemSet->title() == 'Archivo Histórico Fotográfico'||$itemSet->title()=='1940-1949'||$itemSet->title()=='1960-1969'||$itemSet->title()=='1970-1979'||$itemSet->title()=='1980-1989'||$itemSet->title()=='1990-1999'||$itemSet->title()=='2000-2009'||$itemSet->title()=='2010-2019') {
+
+
+        $sortHeadings = [
+            [
+                'label' => $translate('Title'),
+                'value' => 'dcterms:title'
+            ],
+
+            [
+                'label' => $translate('Date'),
+                'value' => 'mcd:date'
+            ],
+            [
+                'label' => $translate('Serie'),
+                'value' => 'mcd:monographSeriesTitle'
+            ],
+        ];
+    } else if ($itemSet->title() == 'Folletos y hojas sueltas'||$itemSet->title()=='Romería'||$itemSet->title()=='Feria'||$itemSet->title()=='Semana Santa'||$itemSet->title()=='Reglamentos'||$itemSet->title()=='Guías'||$itemSet->title()=='Otros') {
+
+
+        $sortHeadings = [
+            [
+                'label' => 'Fecha de publicación',
+                'value' => 'mcd:publicationDate'
+            ],
+            [
+                'label' => $translate('Title'),
+                'value' => 'dcterms:title'
+            ],
+
+    
+            [
+                'label' => 'Ámbito Temático',
+                'value' => 'tsr:thematicScope'
+            ],
+        ];
+    }
+    else if ($itemSet->title() == 'Fondo Ayuntamiento de Tomelloso'||$itemSet->title()=='Gobierno'||$itemSet->title()=='Administración'||$itemSet->title()=='Servicio'||$itemSet->title()=='Hacienda') {
+
+
+        $sortHeadings = [
+            [
+                'label' => $translate('Title'),
+                'value' => 'dcterms:title'
+            ],
+
+            [
+                'label' => $translate('Date'),
+                'value' => 'mcd:date'
+            ],
+            [
+                'label' => $translate('Serie'),
+                'value' => 'mcd:monographSeriesTitle'
+            ],
+            [
+                'label' => $translate('Volumen'),
+                'value' => 'mcd:extension'
+            ],
+        ];
+    }
+    else {
+
+
+        $sortHeadings = [
+            [
+                'label' => $translate('Title'),
+                'value' => 'dcterms:title'
+            ],
+            [
+                'label' => $translate('Identifier'),
+                'value' => 'dcterms:identifier'
+            ],
+            [
+                'label' => $translate('Class'),
+                'value' => 'resource_class_label'
+            ],
+            [
+                'label' => $translate('Created'),
+                'value' => 'created'
+            ],
+        ];
+    }
+} else {
+
+    $sortHeadings = [
+        [
+            'label' => $translate('Title'),
+            'value' => 'dcterms:title'
+        ],
+        [
+            'label' => $translate('Identifier'),
+            'value' => 'dcterms:identifier'
+        ],
+        [
+            'label' => $translate('Class'),
+            'value' => 'resource_class_label'
+        ],
+        [
+            'label' => $translate('Created'),
+            'value' => 'created'
+        ],
+    ];
+}
+
+?>
+
+<?php if ($itemSetShow) : ?>
+    <!-- <?php echo $this->pageTitle($itemSet->title(), 2); ?> -->
+    <br>
+    <hr>
+    <!-- <?= $itemSet->title() ?>
+    <h3><?php echo $translate('Item set'); ?></h3> -->
+
+
+
+    <?php
+    // $headingTerm = $this->siteSetting('browse_heading_property_term');
+    $headingTerm = $this->siteSetting('');
+    $bodyTerm = $this->siteSetting('browse_body_property_term');
+
+    $heading = $headingTerm ? $itemSet->value($headingTerm, ['default' => $translate('[Untitled]')]) : $itemSet->displayTitle();
+    $body = $bodyTerm ? $itemSet->value($bodyTerm) : $itemSet->displayDescription();
+    if ($media = $itemSet->primaryMedia())
+        $thumbnail = $media->thumbnailUrl('medium');
+
+    $thumbnail = $itemSet->thumbnail();
+
+
+    ?>
+    <?php
+    if ($thumbnail != null) {
+        // var_dump($thumbnail->name());
+    ?>
+        <div class="resource-list diapositivaSub" style="background-image: url(<?= ($thumbnail->assetUrl()) ?>);
+            background-repeat:no-repeat">
+        </div>
+    <?php
+
+
+        // var_dump($thumbnail->getReference());
+    } else {
+        echo '';
+        // echo '<div class="resource-list diapositivaSubNoFondo">' . '</div>';
+    }     ?>
+
+
+    <div class="metadata">
+        <?php echo $itemSet->displayValues(); ?>
+
+
+        <div class="item-set-items">
+            <?php echo '<h4>' . 'Items que forma parte de esta colección:' . '</h4>'; ?>
+            <br>
+        <?php else : ?>
+            <?php echo $this->pageTitle($translate('Items'), 2); ?>
+        <?php endif; ?>
+
+        <?php echo $this->searchFilters(); ?>
+
+        <div class="browse-controls">
+            <?php echo $this->pagination(); ?>
+            <?php echo $this->hyperlink($translate('Advanced search'), $this->url('site/resource', ['controller' => 'item', 'action' => 'search'], ['query' => $query], true), ['class' => 'advanced-search']); ?>
+            <?php echo $this->sortSelector($sortHeadings); ?>
+        </div>
+
+        <?php $this->trigger('view.browse.before'); ?>
+        <ul class="resource-list">
+            <?php
+            $headingTerm = $this->siteSetting('browse_heading_property_term');
+            $bodyTerm = $this->siteSetting('browse_body_property_term');
+            foreach ($items as $item) :
+                $heading = $headingTerm ? $item->value($headingTerm, ['default' => $translate('[Untitled]')]) : $item->displayTitle();
+                $body = $bodyTerm ? $item->value($bodyTerm) : $item->displayDescription();
+            ?>
+                <li class="item resource">
+                    <?php echo $item->linkRaw($this->thumbnail($item, 'medium')); ?>
+                    <div>
+                        <?php if (isset($itemSet)) : ?>
+
+
+                            <?php if (
+                                $itemSet->title() == 'Publicaciones seriadas'
+                                || $itemSet->title() == 'Audaz'
+                                || $itemSet->title() == 'El Ciudadano'
+                                || $itemSet->title() == 'El Defensor'
+                                || $itemSet->title() == 'El Porvenir'
+                                || $itemSet->title() == 'Hidalguía'
+                                || $itemSet->title() == 'Cruz Roja Española'
+                                || $itemSet->title() == 'El Pueblo Manchego'
+                                || $itemSet->title() == 'Regeneración'
+                                || $itemSet->title() == 'Júpiter'
+                                || $itemSet->title() == 'La Opinión'
+                                || $itemSet->title() == 'La Verdad'
+                                || $itemSet->title() == 'La Voz del Pueblo'
+                                || $itemSet->title() == 'Luz de Tomelloso'
+                                || $itemSet->title() == 'El Obrero de Tomelloso'
+                                || $itemSet->title() == 'Voz de Tomelloso'
+
+                            ) : ?>
+                              <h4><?php echo '<a style="color:#e76005">Título: </a>' . $item->link($heading); ?></h4>
+                                <p><?php echo '<b>Título:</b> ' . $item->value('dcterms:title'); ?></p>
+                                <p><?php echo '<b>Extension:</b> ' . $item->value('mcd:extension'); ?></p>
+                                <p><?php echo '<b>Transcripción y número de fecha: </b>' . $item->value('mcd:seriesNumberDate'); ?></p>
+
+                            <?php endif; ?>
+                            <?php if (
+                                $itemSet->title() == 'El Obrero'
+                                || $itemSet->title() == 'Manuscritos Profesionales'
+                                || $itemSet->title() == 'Manuscritos personales'
+                                || $itemSet->title() == 'Libros'
+                                || $itemSet->title() == 'Fotografías'
+
+                            ) : ?>
+                                 <h4><?php echo '<a style="color:#e76005">Título: </a>' . $item->link($heading); ?></h4>
+                                <p><?php echo '<b>Fecha: </b>' . $item->value('mcd:publicationDate'); ?></p>
+                                <p><?php echo '<b>Dimensiones: </b>' . $item->value('mcd:extension'); ?></p>
+
+                            <?php endif; ?>
+                            <?php if (
+                                $itemSet->title() == 'Archivo Histórico Fotográfico'
+                                || $itemSet->title() == '1940-1949'
+                                || $itemSet->title() == '1960-1969'
+                                || $itemSet->title() == '1970-1979'
+                                || $itemSet->title() == '1980-1989'
+                                || $itemSet->title() == '1990-1999'
+                                || $itemSet->title() == '2000-2009'
+                                || $itemSet->title() == '2010-2019'
+                            ) : ?>
+                                <h4><?php echo '<a style="color:#e76005">Título: </a>' . $item->link($heading); ?></h4>
+                                <p><?php echo '<b>Fecha:</b> ' . $item->value('mcd:publicationDate'); ?></p>
+                                <p><?php echo '<b>Extensión:</b>' . $item->value('mcd:extension'); ?></p>
+
+                            <?php endif; ?>
+                            <?php if (
+                                $itemSet->title() == 'Fondo Ayuntamiento de Tomelloso'
+                                || $itemSet->title() == 'Gobierno'
+                                || $itemSet->title() == 'Servicios'
+                                || $itemSet->title() == 'Administración'
+                                || $itemSet->title() == 'Hacienda'
+                            ) : ?>
+                                <h4><?php echo '<a style="color:#e76005">Título: </a>' . $item->link($heading); ?></h4>
+                                <p><?php echo '<b>Serie: </b> ' . $item->value('bibo:volume'); ?></p>
+                                <p><?php echo '<b> Fecha: </b> ' . $item->value('mcd:publicationDate'); ?></p>
+                                <p><?php echo '<b>Volumen: </b>' . $item->value('mcd:extension'); ?></p>
+
+                            <?php endif; ?>
+                            <?php if (
+                                $itemSet->title() == 'Folletos y hojas sueltas'
+                                || $itemSet->title() == 'Romería'
+                                || $itemSet->title() == 'Feria'
+                                || $itemSet->title() == 'Semana Santa'
+                                || $itemSet->title() == 'Reglamentos'
+                                || $itemSet->title() == 'Guías'
+                                || $itemSet->title() == 'Otros'
+
+                            ) : ?>
+                                <h4><?php echo '<a style="color:#e76005">Título: </a>'. $item->link($item->value('mcd:title')); ?></h4>
+                                <p><?php echo '<b>Fecha: </b>' . $item->value('mcd:publicationDate'); ?></p>
+                                <p><?php echo '<b>Extensión: </b>' . $item->value('mcd:extension'); ?></p>
+
+                            <?php endif; ?>
+
+                        <?php else : ?>
+                            <h4><?php echo '<a style="color:#e76005">Título: </a>' . $item->link($item->value('mcd:title')); ?></h4>
+                            <?php if ($item->value('mcd:publicationDate') != null) : ?>
+                                <p><?php echo '<b>Fecha:</b> ' . $item->value('mcd:publicationDate'); ?></p>
+                            <?php endif; ?>
+                            <?php if ($item->value('dc:hasPart') == 'El Pueblo Manchego') : ?>
+
+                                <p><?php echo '<b>Transcripción del número y de la fecha de la colección:</b>' . $item->value('mcd:seriesNumberDate'); ?></p>
+                            <?php endif; ?>
+                            <p><?php echo '<b>Extensión:</b> ' . $item->value('mcd:extension'); ?></p>
+                        <?php endif; ?>
+
+                    </div>
+                    <?php if ($body) : ?>
+
+
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php echo ($itemSetShow) ? '</div>' : ''; ?>
+        <?php $this->trigger('view.browse.after'); ?>
+        <?php echo $this->pagination(); ?>
+        </div>
